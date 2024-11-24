@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">mindsync</string>
+    <string name="welcome_to_mindsync">Selamat Datang di MindSync</string>
+    <string name="onboarding_page1_title">Kelola Dokumen Lebih Cerdas</string>
+    <string name="onboarding_page1_description">Atur semua dokumen Anda dengan mudah dengan sistem manajemen cerdas kami</string>
+    <string name="onboarding_page2_title">Akses melalui WhatsApp</string>
+    <string name="onboarding_page2_description">Temukan dan bagikan dokumen secara instan melalui obrolan WhatsApp - semudah mengirim pesan</string>
+    <string name="onboarding_page3_title">Berkolaborasi secara Real-Time</string>
+    <string name="onboarding_page3_description">Bekerja sama dengan tim Anda secara lancar, kapan saja dan di mana saja</string>
+    <string name="onboarding_skip">Lewati</string>
+    <string name="onboarding_get_started">Mulai</string>
+    <string name="onboarding_next">Selanjutnya</string>
+</resources>

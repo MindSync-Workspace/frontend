@@ -4,49 +4,27 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-
-data class UserResponse(
-    @field:SerializedName("status_code")
-    val statusCode: Int,
-
-    @field:SerializedName("content")
-    val content: UserContent,
-)
-
-data class UserContent(
-    @field:SerializedName("meta")
-    val meta: UserMeta,
-
-    @field:SerializedName("data")
-    val data: UserData,
-)
-
-data class UserMeta(
-    @field:SerializedName("status")
-    val status: String,
-
-    @field:SerializedName("message")
-    val message: String,
-)
-
 @Entity(tableName = "user_data")
 data class UserData(
-    @PrimaryKey(autoGenerate = true)
-    @field:SerializedName("id")
+    @PrimaryKey
+    @SerializedName("id")
     val id: Int,
 
-    @field:SerializedName("username")
+    @SerializedName("username")
     val username: String,
 
-    @field:SerializedName("email")
+    @SerializedName("email")
     val email: String,
 
-    @field:SerializedName("isActive")
-    val isActive: Boolean? = null,
+    @SerializedName("password")
+    val password: String,
 
-    @field:SerializedName("createdAt")
+    @SerializedName("is_active")
+    val isActive: Boolean,
+
+    @SerializedName("created_at")
     val createdAt: String? = null,
 
-    @field:SerializedName("modifiedAt")
-    val modifiedAt: String? = null
+    @SerializedName("modified_at")
+    val modifiedAt: String? = null,
 )

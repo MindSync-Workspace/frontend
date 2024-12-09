@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "718136309138",
+    "project_id": "mindsync-pakenanya",
+    "storage_bucket": "mindsync-pakenanya.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:718136309138:android:872593d41df12864cffd4b",
+        "android_client_info": {
+          "package_name": "com.pakenanya.mindsync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1r_JqT13Gv8qdzDOue__iWA5Ek4EyDQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

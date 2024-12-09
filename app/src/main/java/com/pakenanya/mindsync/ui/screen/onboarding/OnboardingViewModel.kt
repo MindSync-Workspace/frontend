@@ -15,7 +15,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     val shouldShowOnboarding: StateFlow<Boolean> = onboardingManager.shouldShowOnboarding
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = true
         )
 

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -12,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pakenanya.mindsync"
-        minSdk = 21
+        minSdk = 23
         //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
@@ -31,6 +32,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField(
+                "String",
+                "BASE_URL",
+                "\"http://10.0.2.2:8000/\""
+            )
+        }
+        debug {
+            buildConfigField(
+                "String",
+                "BASE_URL",
+                "\"http://10.0.2.2:8000/\""
+            )
         }
     }
     compileOptions {
@@ -42,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -57,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.runtime.livedata)
 
     // Compose Dependencies
     implementation(platform(libs.androidx.compose.bom))
@@ -116,4 +131,9 @@ dependencies {
     // Debugging Tools
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Firebase
+    implementation(libs.firebase.auth)
+
+    implementation(libs.accompanist.permissions)
 }

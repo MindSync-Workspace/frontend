@@ -18,6 +18,10 @@ data class UserRegistrationRequest(
     val isActive: Boolean
 )
 
+data class UserUpdateRequest(
+    val username: String
+)
+
 interface UserApiService {
     @POST("api/users")
     suspend fun createUser(
@@ -35,7 +39,7 @@ interface UserApiService {
     @PUT("api/users/{user_id}")
     suspend fun updateUser(
         @Path("user_id") userId: Int,
-        @Body userData: Map<String, Any>
+        @Body userUpdateRequest: UserUpdateRequest
     ): Response<BaseResponse<UserData>>
 
     @DELETE("api/users/{user_id}")

@@ -6,6 +6,7 @@ import com.pakenanya.mindsync.data.local.room.ChatsDao
 import com.pakenanya.mindsync.data.remote.response.BaseResponse
 import com.pakenanya.mindsync.data.remote.response.ChatsData
 import com.pakenanya.mindsync.data.remote.retrofit.ChatsApiService
+import com.pakenanya.mindsync.data.remote.retrofit.CreateChatRequest
 import org.json.JSONObject
 import retrofit2.Response
 
@@ -13,11 +14,11 @@ class ChatsRepository(
     private val chatsApiService: ChatsApiService,
     private val chatsDao: ChatsDao
 ) {
-    fun createChat(chat: Map<String, Any>): LiveData<Result<ChatsData>> = liveData {
+    fun createChat(createChatRequest: CreateChatRequest): LiveData<Result<ChatsData>> = liveData {
         emit(Result.Loading)
         try {
-            val result = handleResponse(chatsApiService.createChat(chat)) { responseBody ->
-                responseBody.data?.let { chatsDao.insertChat(it) }
+            val result = handleResponse(chatsApiService.createChat(createChatRequest)) { responseBody ->
+                responseBody.data.let { chatsDao.insertChat(it) }
                 responseBody.data
             }
             emit(result)
@@ -30,7 +31,7 @@ class ChatsRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(chatsApiService.getChatsByDocumentId(documentId)) { responseBody ->
-                responseBody.data?.let { chatsDao.insertChats(it) }
+                responseBody.data.let { chatsDao.insertChats(it) }
                 responseBody.data ?: emptyList()
             }
             emit(result)
@@ -43,7 +44,7 @@ class ChatsRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(chatsApiService.updateChat(chatId, chat)) { responseBody ->
-                responseBody.data?.let { chatsDao.insertChat(it) }
+                responseBody.data.let { chatsDao.insertChat(it) }
                 responseBody.data
             }
             emit(result)

@@ -7,20 +7,27 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -30,6 +37,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -37,18 +45,21 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +72,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pakenanya.mindsync.R
 import com.pakenanya.mindsync.ui.navigation.Routes
@@ -106,6 +118,9 @@ fun MainScreen(
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
+    val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
+    val mainRoute = navBackStackEntry?.destination?.route
+
     val authState = authViewModel.authState.observeAsState()
     val userData = authViewModel.userData.observeAsState()
 
@@ -116,17 +131,25 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(mainRoute) {
+        selectedItem = when (mainRoute) {
+            Routes.DASHBOARD -> 0
+            Routes.DOCUMENT -> 1
+            Routes.NOTES -> 2
+            else -> selectedItem
+        }
+    }
+
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background),
         topBar = {
             if (currentRoute == Routes.MAIN_SCREEN) {
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Welcome ${userData.value?.username ?: "Foo"}!",
-//                            style = TextStyle(
-//                                fontSize = 20.sp,
-//                                fontWeight = FontWeight.SemiBold
-//                            ),
+                            text = "Halo ${userData.value?.username ?: "Foo"}!",
                         )
                     },
                     actions = {
@@ -138,50 +161,20 @@ fun MainScreen(
                                     navController.navigate(Routes.PROFILE)
                                 },
                             contentScale = ContentScale.Crop,
-                            painter = painterResource(R.drawable.intro),
+                            painter = painterResource(R.drawable.profile),
                             contentDescription = ""
                         )
                         Spacer(modifier = Modifier.width(20.dp))
                     }
 
                 )
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(100.dp)
-//                ) {
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .padding(horizontal = 20.dp),
-//                        horizontalArrangement = Arrangement.SpaceBetween,
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = "Welcome ${userData.value?.username ?: "Foo"}!",
-//                            style = TextStyle(
-//                                fontSize = 20.sp,
-//                                fontWeight = FontWeight.SemiBold
-//                            ),
-//                        )
-//                        Image(
-//                            modifier = Modifier
-//                                .size(45.dp)
-//                                .clip(CircleShape)
-//                                .clickable {
-//                                    navController.navigate(Routes.PROFILE)
-//                                },
-//                            contentScale = ContentScale.Crop,
-//                            painter = painterResource(R.drawable.intro),
-//                            contentDescription = ""
-//                        )
-//                    }
-//                }
             }
         },
         bottomBar = {
             if (currentRoute == Routes.MAIN_SCREEN) {
-                NavigationBar {
+                NavigationBar(
+                    windowInsets = WindowInsets(0, 0, 0, 0),
+                    ) {
                     items.forEachIndexed { index, item ->
                         val isSelected = selectedItem == index
 
@@ -245,8 +238,8 @@ fun MainScreen(
         } else if(showNoteDialog) {
 
             NoteDialog(
-                onConfirm = { title, _ ->
-                    viewModel.noteOnSubmitted(text = title)
+                onConfirm = { notes ->
+                    viewModel.noteOnSubmitted(text = notes)
                     showNoteDialog = false
                 },
                 onDismiss = { showNoteDialog = false },
@@ -277,6 +270,11 @@ fun DocumentFilePickerDialog(
     onConfirm: (String, MultipartBody.Part) -> Unit,
     onFileSelected: (MultipartBody.Part) -> Unit
 ) {
+    val textFieldStates = remember { mutableStateMapOf<String, Boolean>() }
+    fun getBorderColor(key: String): Color {
+        return if (textFieldStates[key] == true) Color(0xFF006FFD) else Color(0xFFC5C6CC)
+    }
+
     fun getFileFromUri(context: Context, uri: Uri): File? {
         val fileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
@@ -318,19 +316,49 @@ fun DocumentFilePickerDialog(
         text = {
             Column {
                 Text("Unggah dokumen tim agar Anda dapat mencarinya di masa mendatang")
+                Spacer(modifier = Modifier.height(10.dp))
                 TextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Judul") }
+                    label = { Text("Judul") },
+                    colors = TextFieldDefaults.colors(
+                        Color.Black,
+                        cursorColor = Color(0xFF006FFD),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp)
+                        .onFocusChanged { focusState ->
+                            textFieldStates["title"] = focusState.isFocused
+                        }
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = getBorderColor("title")
+                            ),
+                            shape = RoundedCornerShape(12)
+                        ),
                 )
                 TextField(
                     value = fileName,
                     onValueChange = {},
                     label = { Text("Pilih File") },
                     readOnly = true,
+                    colors = TextFieldDefaults.colors(
+                        Color.Black,
+                        cursorColor = Color(0xFF006FFD),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
                     modifier = Modifier.clickable {
-                        launcher.launch("*/*") // Ini membuka picker untuk semua jenis file
-                    }
+                        launcher.launch("*/*")
+                    },
                 )
             }
         },
@@ -361,11 +389,15 @@ fun DocumentFilePickerDialog(
 
 @Composable
 fun NoteDialog(
-    onConfirm: (String, String) -> Unit,
+    onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var title by remember { mutableStateOf("") }
-    var desc by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+
+    val textFieldStates = remember { mutableStateMapOf<String, Boolean>() }
+    fun getBorderColor(key: String): Color {
+        return if (textFieldStates[key] == true) Color(0xFF006FFD) else Color(0xFFC5C6CC)
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -373,27 +405,44 @@ fun NoteDialog(
         text = {
             Column {
                 Text("Buat catatan untuk Anda cari di masa mendatang")
+                Spacer(modifier = Modifier.height(10.dp))
                 TextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Judul") }
-                )
-                TextField(
-                    value = desc,
-                    onValueChange = { desc = it },
-                    label = { Text("Deskripsi") },
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text("Catatan") },
+                    colors = TextFieldDefaults.colors(
+                        Color.Black,
+                        cursorColor = Color(0xFF006FFD),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp)
+                        .onFocusChanged { focusState ->
+                            textFieldStates["note"] = focusState.isFocused
+                        }
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = getBorderColor("note")
+                            ),
+                            shape = RoundedCornerShape(12)
+                        ),
                 )
             }
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(title, desc) },
+                onClick = { onConfirm(notes) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF15104D),
                     contentColor = Color.White
                 )
             ) {
-                Text("Upload")
+                Text("Simpan")
             }
         },
         dismissButton = {

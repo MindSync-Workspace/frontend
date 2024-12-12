@@ -26,7 +26,7 @@ class DocumentsRepository(
             val result = handleResponse(
                 documentsApiService.uploadDocument(file, userId, orgId, title, summary)
             ) { responseBody ->
-                responseBody.data?.let { documentsDao.insertDocument(it) }
+                responseBody.data.let { documentsDao.insertDocument(it) }
                 responseBody.data
             }
             emit(result)
@@ -39,7 +39,7 @@ class DocumentsRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(documentsApiService.getDocuments(userId)) { responseBody ->
-                responseBody.data?.let { documentsDao.insertDocuments(it) }
+                responseBody.data.let { documentsDao.insertDocuments(it) }
                 responseBody.data ?: emptyList()
             }
             emit(result)
@@ -52,7 +52,7 @@ class DocumentsRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(documentsApiService.getDocumentById(documentId)) { responseBody ->
-                responseBody.data?.let { documentsDao.getDocumentById(it.id) }
+                responseBody.data.let { documentsDao.getDocumentById(it.id) }
                 responseBody.data
             }
             emit(result)
@@ -68,7 +68,7 @@ class DocumentsRepository(
                 val result = handleResponse(
                     documentsApiService.updateDocument(documentId, document)
                 ) { responseBody ->
-                    responseBody.data?.let { documentsDao.insertDocument(it) }
+                    responseBody.data.let { documentsDao.insertDocument(it) }
                     responseBody.data
                 }
                 emit(result)

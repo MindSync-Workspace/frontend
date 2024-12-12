@@ -15,6 +15,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
+sealed class ContentState {
+    data object Success : ContentState()
+    data object Loading : ContentState()
+}
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val userRepository: UserRepository,
@@ -27,6 +32,9 @@ class MainViewModel @Inject constructor(
 
     private val _notesData = MutableLiveData<List<NotesData>>()
     val notesData: LiveData<List<NotesData>> = _notesData
+
+    private val _contentState = MutableLiveData<ContentState>()
+    val contentState : LiveData<ContentState> = _contentState
 
     init {
         getDocuments()
@@ -58,6 +66,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun noteOnSubmitted(text: String) {
+        _contentState.value = ContentState.Loading
         userRepository.getUser().observeForever { result ->
             if (result is Result.Success) {
                 val createNoteRequest = CreateNoteRequest(
@@ -69,6 +78,7 @@ class MainViewModel @Inject constructor(
                     if (resultCreateNote is Result.Success) {
                         Log.e("result", "Berhasil membuat note")
                         getNotes()
+                        _contentState.value = ContentState.Success
                     }
                 }
             }
@@ -76,6 +86,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun documentOnSubmitted(file: MultipartBody.Part, title: String) {
+        _contentState.value = ContentState.Loading
         userRepository.getUser().observeForever { result ->
             if (result is Result.Success) {
                 val userId = result.data.id
@@ -83,6 +94,7 @@ class MainViewModel @Inject constructor(
                     if (resultUploadDoc is Result.Success) {
                         Log.e("result", "Berhasil upload document")
                         getDocuments()
+                        _contentState.value = ContentState.Success
                     }
                 }
             }

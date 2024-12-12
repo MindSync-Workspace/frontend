@@ -1,7 +1,6 @@
 package com.pakenanya.mindsync.ui.navigation
 
 object Routes {
-    const val SPLASH = "splash"
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val MAIN_SCREEN = "main_screen"
@@ -11,4 +10,6 @@ object Routes {
     const val NOTES = "notes"
     const val NOTE_DETAIL = "note_detail/{note_id}"
     const val PROFILE = "profile"
+    const val EDIT_PROFILE = "edit_profile"
+    const val CONNECT_BOT = "connect_bot"
 }

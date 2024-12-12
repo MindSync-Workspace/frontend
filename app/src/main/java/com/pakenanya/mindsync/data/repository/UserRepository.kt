@@ -7,6 +7,7 @@ import com.pakenanya.mindsync.data.remote.response.BaseResponse
 import com.pakenanya.mindsync.data.remote.response.UserData
 import com.pakenanya.mindsync.data.remote.retrofit.UserApiService
 import com.pakenanya.mindsync.data.remote.retrofit.UserRegistrationRequest
+import com.pakenanya.mindsync.data.remote.retrofit.UserUpdateRequest
 import org.json.JSONObject
 import retrofit2.Response
 
@@ -19,7 +20,7 @@ class UserRepository(
         try {
             if (isRegister) {
                 val result = handleResponse(userApiService.createUser(userRegistrationRequest)) { responseBody ->
-                    responseBody.data?.let { userDao.insertUser(it) }
+                    responseBody.data.let { userDao.insertUser(it) }
                     responseBody.data
                 }
                 emit(result)
@@ -80,12 +81,12 @@ class UserRepository(
 
     fun updateUser(
         userId: Int,
-        userData: Map<String, Any>
+        userUpdateRequest: UserUpdateRequest
     ): LiveData<Result<UserData>> = liveData {
         emit(Result.Loading)
         try {
-            val result = handleResponse(userApiService.updateUser(userId, userData)) { responseBody ->
-                responseBody.data?.let { userDao.insertUser(it) }
+            val result = handleResponse(userApiService.updateUser(userId, userUpdateRequest)) { responseBody ->
+                responseBody.data.let { userDao.insertUser(it) }
                 responseBody.data
             }
             emit(result)

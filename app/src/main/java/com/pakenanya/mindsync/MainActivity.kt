@@ -14,12 +14,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.padding
 import com.pakenanya.mindsync.ui.theme.MindsyncTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.core.splashscreen.SplashScreen
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.pakenanya.mindsync.data.manager.MindSyncAppPreferences
 import com.pakenanya.mindsync.ui.navigation.AppNavigation
 import com.pakenanya.mindsync.ui.screen.auth.AuthViewModel

@@ -3,7 +3,6 @@ package com.pakenanya.mindsync.ui.screen.onboarding
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -204,7 +203,8 @@ private fun OnboardingPage(
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f),
+                .fillMaxHeight(0.7f)
+                .padding(top = 20.dp),
             contentScale = ContentScale.Crop
         )
         Column(

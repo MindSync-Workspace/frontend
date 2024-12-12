@@ -11,10 +11,7 @@ import com.pakenanya.mindsync.data.repository.ChatsRepository
 import com.pakenanya.mindsync.data.repository.DocumentsRepository
 import com.pakenanya.mindsync.data.repository.Result
 import com.pakenanya.mindsync.data.repository.UserRepository
-import com.pakenanya.mindsync.ui.screen.main.document.model.ChatUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel

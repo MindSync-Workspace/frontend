@@ -53,17 +53,17 @@ data class OnboardingPage(
 fun OnboardingScreen(onFinished: () -> Unit) {
     val pages = listOf(
         OnboardingPage(
-            image = R.drawable.intro,
+            image = R.drawable.slide_1,
             title = stringResource(R.string.onboarding_page1_title),
             description = stringResource(R.string.onboarding_page1_description)
         ),
         OnboardingPage(
-            image = R.drawable.intro,
+            image = R.drawable.slide_2,
             title = stringResource(R.string.onboarding_page2_title),
             description = stringResource(R.string.onboarding_page2_description)
         ),
         OnboardingPage(
-            image = R.drawable.intro,
+            image = R.drawable.slide_3,
             title = stringResource(R.string.onboarding_page3_title),
             description = stringResource(R.string.onboarding_page3_description)
         )
@@ -200,7 +200,7 @@ private fun OnboardingPage(
             .fillMaxHeight()
     ) {
         Image(
-            painter = painterResource(R.drawable.intro),
+            painter = painterResource(page.image),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()

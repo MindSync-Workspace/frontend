@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.pakenanya.mindsync.data.local.room.UserDao
 import com.pakenanya.mindsync.data.manager.MindSyncAppPreferences
-import com.pakenanya.mindsync.data.remote.response.UserData
 
 class AuthRepository(
     private val userDao: UserDao,

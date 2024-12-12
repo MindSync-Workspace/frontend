@@ -35,14 +35,14 @@ android {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"https://35.224.219.212/\""
+                "\"http://10.0.2.2:8000/\""
             )
         }
         debug {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"https://35.224.219.212/\""
+                "\"http://10.0.2.2:8000/\""
             )
         }
     }

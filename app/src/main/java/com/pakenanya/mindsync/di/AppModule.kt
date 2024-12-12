@@ -35,7 +35,9 @@ import com.pakenanya.mindsync.data.repository.OrganizationsRepository
 import com.pakenanya.mindsync.data.remote.retrofit.DocumentsApiService
 import com.pakenanya.mindsync.data.remote.retrofit.MembershipsApiService
 import com.pakenanya.mindsync.data.remote.retrofit.OrganizationsApiService
+import com.pakenanya.mindsync.data.remote.retrofit.WhatsappApiService
 import com.pakenanya.mindsync.data.repository.UserRepository
+import com.pakenanya.mindsync.data.repository.WhatsappRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -320,5 +322,33 @@ object AppModule {
         chatDao: ChatsDao,
     ): ChatsRepository {
         return ChatsRepository(chatApiService, chatDao)
+    }
+
+    // ------------------- Whatsapp -------------------
+    @Provides
+    @Singleton
+    fun provideWhatsappApiService(): WhatsappApiService {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WhatsappApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWhatsappRepository(
+        whatsappApiService: WhatsappApiService
+    ): WhatsappRepository {
+        return WhatsappRepository(whatsappApiService)
     }
 }

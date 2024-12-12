@@ -12,6 +12,11 @@ import com.pakenanya.mindsync.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+sealed class SearchState {
+    data object Success : SearchState()
+    data object Loading : SearchState()
+}
+
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val notesRepository: NotesRepository,
@@ -22,6 +27,9 @@ class DashboardViewModel @Inject constructor(
 
     private val _notesData = MutableLiveData<List<NotesData>>()
     val notesData: LiveData<List<NotesData>> = _notesData
+
+    private val _searchState = MutableLiveData<SearchState>()
+    val searchState : LiveData<SearchState> = _searchState
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
@@ -42,12 +50,14 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun performSearch(query: String) {
+        _searchState.value = SearchState.Loading
         userRepository.getUser().observeForever { result ->
             if (result is Result.Success) {
                 val searchParams = NoteSearchRequest(n_items = 3, text = query)
                 notesRepository.searchNotesByUser(result.data.id, searchParams).observeForever { resultNotes ->
                     if (resultNotes is Result.Success) {
                         _notesData.value = resultNotes.data
+                        _searchState.value = SearchState.Success
                     }
                 }
             }

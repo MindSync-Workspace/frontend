@@ -19,7 +19,7 @@ class NotesRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(notesApiService.createNote(createNoteRequest)) { responseBody ->
-                responseBody.data?.let { notesDao.insertNote(it) }
+                responseBody.data.let { notesDao.insertNote(it) }
                 responseBody.data
             }
             emit(result)
@@ -32,7 +32,7 @@ class NotesRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(notesApiService.getNoteById(noteId)) { responseBody ->
-                responseBody.data?.let { notesDao.insertNote(it) }
+                responseBody.data.let { notesDao.insertNote(it) }
                 responseBody.data
             }
             emit(result)
@@ -45,7 +45,7 @@ class NotesRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(notesApiService.getNotesByUserId(userId)) { responseBody ->
-                responseBody.data?.let { notesDao.insertNotes(it) }
+                responseBody.data.let { notesDao.insertNotes(it) }
                 responseBody.data ?: emptyList()
             }
             emit(result)
@@ -58,7 +58,7 @@ class NotesRepository(
         emit(Result.Loading)
         try {
             val result = handleResponse(notesApiService.getNotesByOrgId(orgId)) { responseBody ->
-                responseBody.data?.let { notesDao.insertNotes(it) }
+                responseBody.data.let { notesDao.insertNotes(it) }
                 responseBody.data ?: emptyList()
             }
             emit(result)
@@ -73,7 +73,7 @@ class NotesRepository(
             val result = handleResponse(
                 notesApiService.getNotesByUserAndOrg(userId, orgId)
             ) { responseBody ->
-                responseBody.data?.let { notesDao.insertNotes(it) }
+                responseBody.data.let { notesDao.insertNotes(it) }
                 responseBody.data ?: emptyList()
             }
             emit(result)
@@ -96,6 +96,32 @@ class NotesRepository(
                 emit(Result.Error("An error occurred: ${e.message}"))
             }
         }
+
+    fun updateNoteById(noteId: Int, createNoteRequest: CreateNoteRequest): LiveData<Result<NotesData>> = liveData {
+        emit(Result.Loading)
+        try {
+            val result = handleResponse(notesApiService.updateNote(noteId, createNoteRequest)) { responseBody ->
+                responseBody.data.let { notesDao.updateNote(it) }
+                responseBody.data
+            }
+            emit(result)
+        } catch (e: Exception) {
+            emit(Result.Error("An error occurred: ${e.message}"))
+        }
+    }
+
+    fun deleteNote(noteId: Int): LiveData<Result<Unit>> = liveData {
+        emit(Result.Loading)
+        try {
+            val result = handleResponse(notesApiService.deleteNote(noteId)) { responseBody ->
+                responseBody.data.let { notesDao.deleteNoteById(noteId) }
+                responseBody.data
+            }
+            emit(Result.Success(Unit))
+        } catch (e: Exception) {
+            emit(Result.Error("An error occurred: ${e.message}"))
+        }
+    }
 
     private suspend fun <T> handleResponse(
         response: Response<BaseResponse<T>>,

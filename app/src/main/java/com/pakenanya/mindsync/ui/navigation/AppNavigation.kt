@@ -13,7 +13,9 @@ import com.pakenanya.mindsync.ui.screen.auth.LoginScreen
 import com.pakenanya.mindsync.ui.screen.auth.RegisterScreen
 import com.pakenanya.mindsync.ui.screen.main.document.DocumentDetailScreen
 import com.pakenanya.mindsync.ui.screen.main.note.NoteDetailScreen
+import com.pakenanya.mindsync.ui.screen.profile.EditProfileScreen
 import com.pakenanya.mindsync.ui.screen.profile.ProfileScreen
+import com.pakenanya.mindsync.ui.screen.profile.WhatsappBindScreen
 
 @Composable
 fun AppNavigation(
@@ -47,14 +49,20 @@ fun AppNavigation(
         composable(Routes.MAIN_SCREEN) {
             MainScreen(modifier, navController, authViewModel)
         }
-        composable(Routes.PROFILE) {
-            ProfileScreen(modifier, navController, authViewModel)
-        }
         composable(Routes.NOTE_DETAIL) { backStackEntry ->
             NoteDetailScreen(modifier, navController, backStackEntry)
         }
         composable(Routes.DOCUMENT_DETAIL) { backStackEntry ->
             DocumentDetailScreen(modifier, navController, backStackEntry)
+        }
+        composable(Routes.PROFILE) {
+            ProfileScreen(modifier, navController, authViewModel)
+        }
+        composable(Routes.EDIT_PROFILE) {
+            EditProfileScreen(modifier, navController, authViewModel)
+        }
+        composable(Routes.CONNECT_BOT) {
+            WhatsappBindScreen(modifier, navController, authViewModel)
         }
     }
 }

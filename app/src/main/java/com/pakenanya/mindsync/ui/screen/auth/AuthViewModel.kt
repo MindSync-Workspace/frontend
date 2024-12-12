@@ -1,6 +1,8 @@
 package com.pakenanya.mindsync.ui.screen.auth
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,7 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.pakenanya.mindsync.data.manager.MindSyncAppPreferences
 import com.pakenanya.mindsync.data.remote.response.UserData
+import com.pakenanya.mindsync.data.remote.response.WhatsappData
 import com.pakenanya.mindsync.data.remote.retrofit.UserRegistrationRequest
+import com.pakenanya.mindsync.data.remote.retrofit.UserUpdateRequest
 import com.pakenanya.mindsync.data.repository.AuthRepository
 import com.pakenanya.mindsync.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.pakenanya.mindsync.data.repository.Result
+import com.pakenanya.mindsync.data.repository.WhatsappRepository
 
 sealed class AuthState {
     data object Authenticated : AuthState()
@@ -29,6 +34,7 @@ sealed class AuthState {
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val whatsappRepository: WhatsappRepository,
     private val auth: FirebaseAuth,
     private val preferencesManager: MindSyncAppPreferences
 ): ViewModel() {
@@ -37,6 +43,9 @@ class AuthViewModel @Inject constructor(
 
     private val _userData = MutableLiveData<UserData>()
     val userData: LiveData<UserData> = _userData
+
+    private val _waData = MutableLiveData<WhatsappData>()
+    val waData: LiveData<WhatsappData> = _waData
 
     private val _authState = MutableLiveData<AuthState>()
     val authState : LiveData<AuthState> = _authState
@@ -160,6 +169,29 @@ class AuthViewModel @Inject constructor(
         userRepository.getUser().observeForever { result ->
             if (result is Result.Success) {
                 _userData.value = result.data
+            }
+        }
+    }
+
+    fun getSecretKey() {
+        userRepository.getUser().observeForever { result ->
+            if (result is Result.Success) {
+                whatsappRepository.getSecretKeyByUserId(result.data.id).observeForever { resultWA ->
+                    if (resultWA is Result.Success) {
+                        _waData.value = resultWA.data
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateUser(userId: Int, username: String, context: Context) {
+        val userUpdateRequest = UserUpdateRequest(username)
+        userRepository.updateUser(userId, userUpdateRequest).observeForever {result ->
+            if (result is Result.Success) {
+                Log.e("Update Profile", "Berhasil ubah profil")
+                getUser()
+                Toast.makeText(context, "Berhasil ubah profil", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -3,9 +3,11 @@ package com.pakenanya.mindsync.ui.screen.auth
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -72,7 +75,9 @@ fun LoginScreen(
 
     LaunchedEffect(authState.value) {
         when(authState.value) {
-            is AuthState.Authenticated -> navController.navigate(Routes.MAIN_SCREEN)
+            is AuthState.Authenticated -> navController.navigate(Routes.MAIN_SCREEN) {
+                popUpTo(Routes.LOGIN) { inclusive = true }
+            }
             is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
             else -> Unit
         }
@@ -84,129 +89,144 @@ fun LoginScreen(
 
     val focusManager = LocalFocusManager.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
-        Image(
-            painter = painterResource(id = R.drawable.mindsync_login),
-            contentDescription = "MindSync Logo",
-            modifier = Modifier.size(200.dp)
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        TextField(
-            value = emailAddress,
-            onValueChange = { emailAddress = it },
-            placeholder = { Text("Alamat Email") },
-            colors = TextFieldDefaults.colors(
-                Color.Black,
-                cursorColor = Color(0xFF006FFD),
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    textFieldStates["emailAddress"] = focusState.isFocused
-                }
-                .border(
-                    BorderStroke(
-                        width = 1.dp,
-                        color = getBorderColor("emailAddress")
-                    ),
-                    shape = RoundedCornerShape(12)
+                .fillMaxSize()
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
+            Image(
+                painter = painterResource(id = R.drawable.mindsync_login),
+                contentDescription = "MindSync Logo",
+                modifier = Modifier.size(200.dp)
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            TextField(
+                value = emailAddress,
+                onValueChange = { emailAddress = it },
+                placeholder = { Text("Alamat Email") },
+                colors = TextFieldDefaults.colors(
+                    Color.Black,
+                    cursorColor = Color(0xFF006FFD),
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
                 ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = { Text("Password") },
-            colors = TextFieldDefaults.colors(
-                Color.Black,
-                cursorColor = Color(0xFF006FFD),
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    textFieldStates["password"] = focusState.isFocused
-                }
-                .border(
-                    BorderStroke(
-                        width = 1.dp,
-                        color = getBorderColor("password")
-                    ),
-                    shape = RoundedCornerShape(12)
-                ),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        painter = painterResource(
-                            id = if (passwordVisible) R.drawable.hide_password else R.drawable.show_password
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        textFieldStates["emailAddress"] = focusState.isFocused
+                    }
+                    .border(
+                        BorderStroke(
+                            width = 1.dp,
+                            color = getBorderColor("emailAddress")
                         ),
-                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                    )
-                }
-            },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Lupa Password?",
-            color = Color(0xFF006FFD),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.align(Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                authViewModel.login(emailAddress, password)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF1A1344)
+                        shape = RoundedCornerShape(12)
+                    ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                singleLine = true
             )
-        ) {
-            Text("Log in")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                "Bukan Member? ",
-                fontSize = 14.sp,
-                color = Color(0xFF71727A)
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = { Text("Password") },
+                colors = TextFieldDefaults.colors(
+                    Color.Black,
+                    cursorColor = Color(0xFF006FFD),
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        textFieldStates["password"] = focusState.isFocused
+                    }
+                    .border(
+                        BorderStroke(
+                            width = 1.dp,
+                            color = getBorderColor("password")
+                        ),
+                        shape = RoundedCornerShape(12)
+                    ),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (passwordVisible) R.drawable.hide_password else R.drawable.show_password
+                            ),
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                },
+                singleLine = true
             )
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Daftar Sekarang",
+                text = "Lupa Password?",
+                color = Color(0xFF006FFD),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF006FFD),
-                modifier = Modifier.clickable { navController.navigate(Routes.REGISTER) }
+                modifier = Modifier.align(Alignment.Start)
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    authViewModel.login(emailAddress, password)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1A1344)
+                )
+            ) {
+                Text("Log in")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    "Bukan Member? ",
+                    fontSize = 14.sp,
+                    color = Color(0xFF71727A)
+                )
+                Text(
+                    "Daftar Sekarang",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF006FFD),
+                    modifier = Modifier.clickable { navController.navigate(Routes.REGISTER) }
+                )
+            }
+        }
+        if (authState.value is AuthState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x80000000)) // Semi-transparent background
+                    .align(Alignment.Center)
+            ) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }

@@ -23,5 +23,11 @@ data class DocumentsData(
     val summary: String? = null,
 
     @field:SerializedName("file_path")
-    val filePath: String
+    val filePath: String,
+
+    @field:SerializedName("created_at")
+    val createdAt: String? = null,
+
+    @field:SerializedName("modified_at")
+    val modifiedAt: String? = null,
 )

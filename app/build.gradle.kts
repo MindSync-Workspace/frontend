@@ -35,14 +35,14 @@ android {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"http://10.0.2.2:8000/\""
+                "\"https://35.224.219.212/\""
             )
         }
         debug {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"http://10.0.2.2:8000/\""
+                "\"https://35.224.219.212/\""
             )
         }
     }
@@ -80,10 +80,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose.v284)
+    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.coil.compose)
-
-    // Material Design
-//    implementation(libs.material.icons.extended)
 
     // Networking
     implementation(libs.retrofit)
@@ -135,5 +133,6 @@ dependencies {
     // Firebase
     implementation(libs.firebase.auth)
 
+    // Other
     implementation(libs.accompanist.permissions)
 }

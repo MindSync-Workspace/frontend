@@ -1,6 +1,8 @@
 package com.pakenanya.mindsync.ui.screen.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,8 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pakenanya.mindsync.R
 import com.pakenanya.mindsync.ui.navigation.Routes
 import com.pakenanya.mindsync.ui.screen.auth.AuthState
 import com.pakenanya.mindsync.ui.screen.auth.AuthViewModel
@@ -45,10 +50,13 @@ fun ProfileScreen(
 ) {
 
     val authState = authViewModel.authState.observeAsState()
+    val userData = authViewModel.userData.observeAsState()
 
     LaunchedEffect(authState.value) {
         when(authState.value) {
-            is AuthState.Unauthenticated -> navController.navigate(Routes.LOGIN)
+            is AuthState.Unauthenticated -> navController.navigate(Routes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
             else -> Unit
         }
     }
@@ -56,7 +64,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = { Text("Profil") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -77,35 +85,32 @@ fun ProfileScreen(
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
+                Image(
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
-                ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.size(64.dp),
-                        tint = Color.White
-                    )
-                }
+                        .clickable {
+                            navController.navigate(Routes.PROFILE)
+                        },
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(R.drawable.profile),
+                    contentDescription = ""
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Kevin", style = MaterialTheme.typography.headlineSmall)
+                userData.value?.let { Text(it.username, style = MaterialTheme.typography.headlineSmall) }
 
-                Text("kevin@example.com", style = MaterialTheme.typography.bodyMedium)
+                userData.value?.let { Text(it.email, style = MaterialTheme.typography.bodyMedium) }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { /* Navigasi ke halaman edit atau fungsi edit profil */ },
+                    onClick = { navController.navigate(Routes.CONNECT_BOT) },
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        Color(0xFF25d366)
+                        Color(0xFF00AD11)
                     ),
                 ) {
                     Text("Hubungkan ke Whatsapp")
@@ -114,14 +119,14 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { /* Navigasi ke halaman edit atau fungsi edit profil */ },
+                    onClick = { navController.navigate(Routes.EDIT_PROFILE) },
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         Color(0xFF1A1344)
                     ),
                 ) {
-                    Text("Edit Profile")
+                    Text("Edit Profil")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

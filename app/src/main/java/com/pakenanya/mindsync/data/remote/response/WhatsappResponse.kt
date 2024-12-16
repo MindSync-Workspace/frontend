@@ -4,7 +4,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 data class WhatsappData(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @field:SerializedName("id")
     val id: Int,
 

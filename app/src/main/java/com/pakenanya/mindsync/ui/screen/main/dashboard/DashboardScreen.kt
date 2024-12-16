@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,83 +63,81 @@ fun DashboardScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 100.dp, start = 20.dp, bottom = 20.dp, end = 20.dp)
+            .padding(top = 100.dp, start = 20.dp, bottom = 80.dp, end = 20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
         ) {
-            TextField(
-                value = searchQuery.value,
-                onValueChange = { viewModel.onSearchQueryChanged(it) },
-                placeholder = { Text("Cari catatan") },
-                colors = TextFieldDefaults.colors(
-                    Color.Black,
-                    cursorColor = Color(0xFF006FFD),
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp)
-                    .onFocusChanged { focusState ->
-                        textFieldStates["search"] = focusState.isFocused
-                    }
-                    .border(
-                        BorderStroke(
-                            width = 1.dp,
-                            color = getBorderColor("search")
-                        ),
-                        shape = RoundedCornerShape(12)
+            item {
+                TextField(
+                    value = searchQuery.value,
+                    onValueChange = { viewModel.onSearchQueryChanged(it) },
+                    placeholder = { Text("Cari catatan") },
+                    colors = TextFieldDefaults.colors(
+                        Color.Black,
+                        cursorColor = Color(0xFF006FFD),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
                     ),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Search
-                ),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        viewModel.onSearchSubmitted()
-                        focusManager.clearFocus()
-                    }
-                ),
-                singleLine = true,
-                suffix = {
-                    IconButton(
-                        onClick = {
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp)
+                        .onFocusChanged { focusState ->
+                            textFieldStates["search"] = focusState.isFocused
+                        }
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = getBorderColor("search")
+                            ),
+                            shape = RoundedCornerShape(12)
+                        ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
                             viewModel.onSearchSubmitted()
                             focusManager.clearFocus()
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Cari"
-                        )
+                        }
+                    ),
+                    singleLine = true,
+                    suffix = {
+                        IconButton(
+                            onClick = {
+                                viewModel.onSearchSubmitted()
+                                focusManager.clearFocus()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Cari"
+                            )
+                        }
                     }
-                }
-            )
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Hasil pencarian", style = TextStyle(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            ))
+                Text("Hasil pencarian", style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                ))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn {
-                notesData.value?.let {
-                    items(it.size) { index ->
-                        NoteItem(
-                            note_id = it[index].id,
-                            notes = it[index].text,
-                            createdAt = it[index].createdAt!!,
-                            navController = navController
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            notesData.value?.let {
+                items(it.size) { index ->
+                    NoteItem(
+                        note_id = it[index].id,
+                        notes = it[index].text,
+                        createdAt = it[index].createdAt!!,
+                        navController = navController
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }

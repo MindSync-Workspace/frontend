@@ -1,5 +1,6 @@
 package com.pakenanya.mindsync.data.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.pakenanya.mindsync.data.local.room.DocumentsDao
@@ -26,9 +27,9 @@ class DocumentsRepository(
             val result = handleResponse(
                 documentsApiService.uploadDocument(file, userId, orgId, title, summary)
             ) { responseBody ->
-                responseBody.data.let { documentsDao.insertDocument(it) }
                 responseBody.data
             }
+            Log.e("result 1", "Berhasil upload document")
             emit(result)
         } catch (e: Exception) {
             emit(Result.Error("An error occurred: ${e.message}"))

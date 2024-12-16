@@ -3,7 +3,9 @@ package com.pakenanya.mindsync.ui.screen.main
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -11,12 +13,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +51,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
@@ -68,6 +73,7 @@ import com.pakenanya.mindsync.ui.screen.auth.AuthViewModel
 import com.pakenanya.mindsync.ui.screen.main.dashboard.DashboardScreen
 import com.pakenanya.mindsync.ui.screen.main.document.DocumentScreen
 import com.pakenanya.mindsync.ui.screen.main.note.NoteScreen
+import com.pakenanya.mindsync.ui.screen.profile.copyToClipboard
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -258,11 +264,43 @@ fun DocumentFilePickerDialog(
     onFileSelected: (MultipartBody.Part) -> Unit
 ) {
     val textFieldStates = remember { mutableStateMapOf<String, Boolean>() }
+
     fun getBorderColor(key: String): Color {
         return if (textFieldStates[key] == true) Color(0xFF006FFD) else Color(0xFFC5C6CC)
     }
 
+    fun getFileNameFromUri(context: Context, uri: Uri): String {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (columnIndex != -1) {
+                        result = cursor.getString(columnIndex)
+                    }
+                }
+            } finally {
+                cursor?.close()
+            }
+        }
+
+        if (result == null) {
+            result = uri.path?.substringAfterLast("/")
+        }
+
+        return result ?: "unknown_file"
+    }
+
     fun getFileFromUri(context: Context, uri: Uri): File? {
+        val allowedExtensions = listOf("pdf", "docx", "pptx", "txt", "md")
+        val fileExtension = getFileNameFromUri(context, uri).substringAfterLast(".").lowercase()
+
+        if (fileExtension !in allowedExtensions) {
+            Toast.makeText(context, "Tipe file ${fileExtension} tidak didukung", Toast.LENGTH_SHORT).show()
+            return null
+        }
+
         val fileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val file = File(context.cacheDir, uri.path?.substringAfterLast("/") ?: "temp_file")
@@ -273,9 +311,24 @@ fun DocumentFilePickerDialog(
         return file
     }
 
-    fun createMultipartBodyPart(file: File, partName: String): MultipartBody.Part {
-        val requestBody = file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
-        return MultipartBody.Part.createFormData(partName, file.name, requestBody)
+    fun createMultipartBodyPart(file: File, uri: Uri, context: Context, partName: String): MultipartBody.Part {
+        val fileName = getFileNameFromUri(context, uri)
+        val fileExtension = fileName.substringAfterLast(".").lowercase()
+
+        val mimeType = when (fileExtension) {
+            "pdf" -> "application/pdf"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "txt" -> "text/plain"
+            "md" -> "text/markdown"
+            else -> "application/octet-stream"
+        }
+        Log.e("mime", "mimeType $mimeType")
+
+        val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
+        Log.e("mime", "data $requestBody")
+        Log.e("mime", "filename $fileName")
+        return MultipartBody.Part.createFormData(partName, fileName, requestBody)
     }
 
     var fileName by remember { mutableStateOf("") }
@@ -286,10 +339,11 @@ fun DocumentFilePickerDialog(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
+            val resolvedFileName = getFileNameFromUri(context, it)
             val file = getFileFromUri(context, it)
             if (file != null) {
-                fileName = file.name
-                filePart = createMultipartBodyPart(file, "file")
+                fileName = resolvedFileName
+                filePart = createMultipartBodyPart(file, it, context, "file")
                 onFileSelected(filePart!!)
             }
         }
@@ -330,23 +384,29 @@ fun DocumentFilePickerDialog(
                             shape = RoundedCornerShape(12)
                         ),
                 )
-                TextField(
-                    value = fileName,
-                    onValueChange = {},
-                    label = { Text("Pilih File") },
-                    readOnly = true,
-                    colors = TextFieldDefaults.colors(
-                        Color.Black,
-                        cursorColor = Color(0xFF006FFD),
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        launcher.launch("*/*")
-                    },
-                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = getBorderColor("file")
+                            ),
+                            shape = RoundedCornerShape(12)
+                        )
+                        .clickable {
+                            launcher.launch("*/*") // MIME types diatur di bawah.
+                        }
+                        .padding(16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = if (fileName.isNotEmpty()) fileName else "Pilih File",
+                        color = if (fileName.isNotEmpty()) Color.Black else Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         },
         confirmButton = {

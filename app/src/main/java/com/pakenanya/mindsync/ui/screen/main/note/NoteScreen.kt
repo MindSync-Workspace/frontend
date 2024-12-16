@@ -28,8 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.pakenanya.mindsync.ui.screen.main.ContentState
 import com.pakenanya.mindsync.ui.screen.main.MainViewModel
+import com.pakenanya.mindsync.ui.screen.main.NoteState
 
 @Composable
 fun NoteScreen(
@@ -38,7 +38,7 @@ fun NoteScreen(
     mainViewModel: MainViewModel
 ) {
     val notesData by mainViewModel.notesData.observeAsState()
-    val contentState = mainViewModel.contentState.observeAsState()
+    val contentState = mainViewModel.noteState.observeAsState()
 
     LaunchedEffect(Unit) {
         mainViewModel.getNotes()
@@ -47,36 +47,34 @@ fun NoteScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 100.dp, start = 20.dp, bottom = 20.dp, end = 20.dp)
+            .padding(top = 100.dp, start = 20.dp, bottom = 80.dp, end = 20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                "Catatan", style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+            item {
+                Text(
+                    "Catatan", style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 )
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn {
-                notesData?.let {
-                    items(it.size) { index ->
-                        NoteItem(
-                            note_id = it[index].id,
-                            notes = it[index].text,
-                            createdAt = it[index].createdAt!!,
-                            navController = navController
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            notesData?.let {
+                items(it.size) { index ->
+                    NoteItem(
+                        note_id = it[index].id,
+                        notes = it[index].text,
+                        createdAt = it[index].createdAt!!,
+                        navController = navController
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
-        if (contentState.value is ContentState.Loading) {
+        if (contentState.value is NoteState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

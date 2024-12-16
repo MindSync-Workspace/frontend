@@ -26,6 +26,7 @@ import com.pakenanya.mindsync.data.repository.WhatsappRepository
 sealed class AuthState {
     data object Authenticated : AuthState()
     data object Unauthenticated : AuthState()
+    data object Success : AuthState()
     data object Loading : AuthState()
     data class Error(val message: String) : AuthState()
 }
@@ -66,37 +67,38 @@ class AuthViewModel @Inject constructor(
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                        task.result.user?.let {
-                            userRepository.getUserByEmail(email).observeForever { result ->
-                                if (result is Result.Success) {
-                                    val user = result.data
+                    task.result.user?.let {
+                        userRepository.getUserByEmail(email).observeForever { result ->
+                            Log.e("result", "$result")
+                            if (result is Result.Success) {
+                                val user = result.data
 
-                                    val userId = user.id
-                                    val username = user.username
-                                    val email = user.email
-                                    val password = user.password
-                                    val isActive = user.isActive
+                                val userId = user.id
+                                val username = user.username
+                                val emailData = user.email
+                                val passwordData = user.password
+                                val isActive = user.isActive
 
-                                    val userData = UserRegistrationRequest(
-                                        id = userId,
-                                        username = username,
-                                        email = email,
-                                        password = password,
-                                        isActive = isActive
-                                    )
+                                val userData = UserRegistrationRequest(
+                                    id = userId,
+                                    username = username,
+                                    email = emailData,
+                                    password = passwordData,
+                                    isActive = isActive
+                                )
 
-                                    userRepository.createUser(userData, false).observeForever { result ->
-                                        if (result is Result.Success) {
-                                            viewModelScope.launch {
-                                                preferencesManager.saveToken(it.uid)
-                                            }
-                                            getUser()
-                                            _authState.value = AuthState.Authenticated
+                                userRepository.createUser(userData, false).observeForever { result ->
+                                    if (result is Result.Success) {
+                                        viewModelScope.launch {
+                                            preferencesManager.saveToken(it.uid)
                                         }
+                                        getUser()
+                                        _authState.value = AuthState.Authenticated
                                     }
                                 }
                             }
                         }
+                    }
                 } else {
                     _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
                 }
@@ -116,7 +118,6 @@ class AuthViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     task.result.user?.let {
                         val userData = UserRegistrationRequest(
-                            id = 0,
                             username = fullName,
                             email = email,
                             password = password,
@@ -125,16 +126,14 @@ class AuthViewModel @Inject constructor(
 
                         userRepository.createUser(userData, true).observeForever { result ->
                             if (result is Result.Success) {
-                                viewModelScope.launch {
-                                    preferencesManager.saveToken(it.uid)
-                                }
-                                getUser()
-                                _authState.value = AuthState.Authenticated
+                                _authState.value = AuthState.Success
+                            } else if (result is Result.Error) {
+                                _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong create User")
                             }
                         }
                     }
                 } else {
-                    _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
+                    _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong firebase auth")
                 }
             }
     }
@@ -148,7 +147,6 @@ class AuthViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     Log.e("SignOut", result.message)
-                    // Log error jika dibutuhkan
                 }
                 else -> Unit
             }

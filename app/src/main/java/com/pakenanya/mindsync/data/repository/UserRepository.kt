@@ -1,5 +1,6 @@
 package com.pakenanya.mindsync.data.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.pakenanya.mindsync.data.local.room.UserDao
@@ -20,13 +21,12 @@ class UserRepository(
         try {
             if (isRegister) {
                 val result = handleResponse(userApiService.createUser(userRegistrationRequest)) { responseBody ->
-                    responseBody.data.let { userDao.insertUser(it) }
                     responseBody.data
                 }
                 emit(result)
             } else {
                 val user = UserData(
-                    id = userRegistrationRequest.id,
+                    id = userRegistrationRequest.id!!,
                     username = userRegistrationRequest.username,
                     email = userRegistrationRequest.email,
                     password = userRegistrationRequest.password,

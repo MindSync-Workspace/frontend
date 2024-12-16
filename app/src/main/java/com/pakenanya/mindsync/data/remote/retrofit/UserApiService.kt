@@ -11,7 +11,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 data class UserRegistrationRequest(
-    val id: Int,
+    val id: Int? = null,
     val username: String,
     val email: String,
     val password: String,

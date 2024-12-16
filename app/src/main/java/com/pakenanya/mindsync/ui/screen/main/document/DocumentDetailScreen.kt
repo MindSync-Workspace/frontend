@@ -1,24 +1,32 @@
 package com.pakenanya.mindsync.ui.screen.main.document
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,6 +81,10 @@ fun DocumentDetailScreen(
     val documentData = viewModel.documentData.observeAsState()
     val chatsData = viewModel.chatsData.observeAsState()
 
+    var deleteDocDialog by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+
     fun List<ChatsData>.toChatUiModel(): ChatUiModel {
         val addressee = ChatUiModel.Author.ai
 
@@ -101,6 +113,13 @@ fun DocumentDetailScreen(
                             contentDescription = "Kembali"
                         )
                     }
+                },
+                actions = {
+                    Text(
+                        "Hapus",
+                        modifier = Modifier.clickable { deleteDocDialog = true }
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
                 }
             )
         }
@@ -129,19 +148,36 @@ fun DocumentDetailScreen(
 
                 // Content based on selected tab
                 when (selectedTabIndex) {
-                    0 -> documentData.value?.summary?.let {
-                        Text(
-                            it,
-                            modifier = Modifier.padding(20.dp)
-                        )
+                    0 -> Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    ) {
+                        documentData.value?.summary?.let {
+                            Text(
+                                it,
+                                modifier = Modifier.padding(20.dp)
+                            )
+                        }
                     }
                     1 -> ChatScreen(
                         model = chatsData.value!!.toChatUiModel(),
-                        onSendChatClickListener = { msg -> viewModel.sendChat(document_id.toInt(), msg) },
+                        onSendChatClickListener = { msg ->
+                            viewModel.sendChat(document_id.toInt(), msg)
+                            focusManager.clearFocus()
+                        },
                         modifier = Modifier
                     )
                 }
             }
+        }
+        if (deleteDocDialog) {
+            DeleteDocDialog(
+                onConfirm = {
+                    deleteDocDialog = false
+                    viewModel.deleteDoc(document_id.toInt())
+                    navController.navigateUp()
+                },
+                onDismiss = { deleteDocDialog = false }
+            )
         }
     }
 }
@@ -211,7 +247,7 @@ fun ChatItem(message: ChatUiModel.Message) {
                 .background(Color(0xFF382ACC))
                 .padding(16.dp)
         ) {
-            Text(text = message.text, color = Color.White)
+            Text(message.text, color = Color.White)
         }
     }
 }
@@ -244,10 +280,13 @@ fun ChatBox(
                 Text(text = "Tanya sesuatu")
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Send),
-            keyboardActions = KeyboardActions(onSend = {
-                onSendChatClickListener(chatBoxValue.text)
-                focusManager.clearFocus()
-            })
+            keyboardActions = KeyboardActions(
+                onSend =
+                {
+                    onSendChatClickListener(chatBoxValue.text)
+                    focusManager.clearFocus()
+                }
+            )
         )
         IconButton(
             onClick = {
@@ -269,4 +308,40 @@ fun ChatBox(
             )
         }
     }
+}
+
+@Composable
+fun DeleteDocDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Peringatan!") },
+        text = {
+            Text("Anda yakin ingin menghapus dokumen?")
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF15104D),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Yakin")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF15104D),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Batal")
+            }
+        }
+    )
 }

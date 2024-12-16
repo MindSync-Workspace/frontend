@@ -76,8 +76,9 @@ fun RegisterScreen(
 
     LaunchedEffect(authState.value) {
         when(authState.value) {
-            is AuthState.Authenticated -> navController.navigate(Routes.MAIN_SCREEN) {
-                popUpTo(Routes.LOGIN) { inclusive = true }
+            is AuthState.Success -> {
+                Toast.makeText(context, "Pendaftaran Anda telah berhasil. Silakan login untuk melanjutkan", Toast.LENGTH_SHORT).show()
+                navController.navigateUp()
             }
             is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
             else -> Unit
@@ -277,7 +278,7 @@ fun RegisterScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0x80000000)) // Semi-transparent background
+                    .background(Color(0x80000000))
                     .align(Alignment.Center)
             ) {
                 CircularProgressIndicator(

@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -32,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pakenanya.mindsync.R
-import com.pakenanya.mindsync.ui.screen.main.ContentState
+import com.pakenanya.mindsync.ui.screen.main.DocumentState
 import com.pakenanya.mindsync.ui.screen.main.MainViewModel
 
 @Composable
@@ -43,42 +44,45 @@ fun DocumentScreen(
 ) {
 
     val documentsData by mainViewModel.documentsData.observeAsState()
-    val contentState = mainViewModel.contentState.observeAsState()
+    val contentState = mainViewModel.documentState.observeAsState()
+
+    LaunchedEffect(Unit) {
+        mainViewModel.getDocuments()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 100.dp, start = 20.dp, bottom = 20.dp, end = 20.dp)
+            .padding(top = 100.dp, start = 20.dp, bottom = 80.dp, end = 20.dp)
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
         ) {
-            Text(
-                "Dokumen", style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+            item {
+                Text(
+                    "Dokumen",
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 )
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn {
-                documentsData?.let {
-                    items(it.size) { index ->
-                        DocumentItem(
-                            document_id = it[index].id,
-                            title = it[index].title,
-                            summary = "Summary: ${it[index].summary}",
-                            createdAt = it[index].createdAt!!,
-                            navController = navController
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            documentsData?.let {
+                items(it.size) { index ->
+                    DocumentItem(
+                        document_id = it[index].id,
+                        title = it[index].title,
+                        summary = "Summary: ${it[index].summary}",
+                        createdAt = it[index].createdAt!!,
+                        navController = navController
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
-        if (contentState.value is ContentState.Loading) {
+        if (contentState.value is DocumentState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

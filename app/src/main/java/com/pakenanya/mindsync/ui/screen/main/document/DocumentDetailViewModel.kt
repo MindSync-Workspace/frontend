@@ -30,6 +30,9 @@ class DocumentDetailViewModel @Inject constructor(
     private var _userId: Int = 0
     var userId: Int = _userId
 
+    private val _deleteResult = MutableLiveData<Result<Boolean>>()
+    val deleteResult: LiveData<Result<Boolean>> get() = _deleteResult
+
     fun getDocument(documentId: Int) {
         documentsRepository.getDocumentById(documentId).observeForever { resultDocuments ->
             if (resultDocuments is Result.Success) {
@@ -48,7 +51,7 @@ class DocumentDetailViewModel @Inject constructor(
     }
 
     fun sendChat(documentId: Int, message: String) {
-        if (userId == 0) {
+        if (userId == 0 && message != "") {
             userRepository.getUser().observeForever { result ->
                 if (result is Result.Success) {
                     _userId = result.data.id
@@ -78,6 +81,17 @@ class DocumentDetailViewModel @Inject constructor(
                     Log.e("Send Chat", "Berhasil kirim pesan")
                     getChats(documentId)
                 }
+            }
+        }
+    }
+
+    fun deleteDoc(id: Int) {
+        documentsRepository.deleteDocument(id).observeForever { result ->
+            if (result is Result.Success) {
+                Log.e("Delete Document", "Berhasil hapus dokumen")
+                _deleteResult.value = Result.Success(true)
+            } else {
+                _deleteResult.value = Result.Success(false)
             }
         }
     }

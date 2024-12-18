@@ -1,6 +1,8 @@
 package com.pakenanya.mindsync.ui.screen.profile
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pakenanya.mindsync.R
+import com.pakenanya.mindsync.ui.navigation.Routes
 import com.pakenanya.mindsync.ui.screen.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +59,8 @@ fun WhatsappBindScreen(
     LaunchedEffect(Unit) {
         authViewModel.getSecretKey()
     }
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -90,6 +97,32 @@ fun WhatsappBindScreen(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
                 waData.value?.let { SecretKeyRow(it.secretKey) }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        val phoneNumber = "+6287777808242"
+                        val message = ".login ${waData.value?.secretKey}"
+                        val uri = Uri.parse("https://wa.me/$phoneNumber?text=${Uri.encode(message)}")
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        intent.setPackage("com.whatsapp")
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        } else {
+                            val playStoreIntent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://play.google.com/store/apps/details?id=com.whatsapp")
+                            )
+                            context.startActivity(playStoreIntent)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        Color(0xFF00AD11)
+                    ),
+                ) {
+                    Text("Hubungkan Sekarang")
+                }
             }
         }
     }

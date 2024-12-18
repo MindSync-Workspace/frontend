@@ -102,18 +102,18 @@ fun WhatsappBindScreen(
                     onClick = {
                         val phoneNumber = "+6287777808242"
                         val message = ".login ${waData.value?.secretKey}"
-                        val uri = Uri.parse("https://wa.me/$phoneNumber?text=${Uri.encode(message)}")
-                        val intent = Intent(Intent.ACTION_VIEW, uri)
-                        intent.setPackage("com.whatsapp")
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        } else {
-                            val playStoreIntent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://play.google.com/store/apps/details?id=com.whatsapp")
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse(
+                                "https://wa.me/${phoneNumber.removePrefix("+")}?text=${
+                                    message.replace(
+                                        " ",
+                                        "%20"
+                                    )
+                                }"
                             )
-                            context.startActivity(playStoreIntent)
-                        }
+                        )
+                        context.startActivity(intent)
                     },
                     modifier = Modifier
                         .fillMaxWidth(),
